@@ -88,7 +88,6 @@ public class TenantMgtUtil {
      * Prepares string to show theme management page.
      *
      * @param tenantId tenant id
-     * @return UUID uniques id to refer the tenant.
      * @throws TenantMgtException if failed.
      */
     public static void prepareStringToShowThemeMgtPage(int tenantId, String resourceId) throws
@@ -361,11 +360,11 @@ public class TenantMgtUtil {
             bean.setCreatedDate(createdDate);
 
             bean.setActive(tenant.isActive());
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("The TenantInfoBean object has been created from the tenant.");
             }
         } else {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("The tenant is null.");
             }
         }
@@ -602,32 +601,27 @@ public class TenantMgtUtil {
      */
     public static void deleteProductSpecificTenantData(String dataSourceName, String tableName, int tenantId) {
         try {
-            TenantDataDeletionUtil.deleteProductSpecificTenantData(((DataSource) InitialContext.doLookup(dataSourceName)).
-                    getConnection(), tableName, tenantId);
+            TenantDataDeletionUtil.deleteProductSpecificTenantData(
+                    ((DataSource) InitialContext.doLookup(dataSourceName)).getConnection(), tableName, tenantId);
         } catch (Exception e) {
             throw new RuntimeException("Error in looking up data source: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Delete the tenant directory of a given tenant id
+     * Delete the tenant directories of a given tenant
      *
      * @param tenantId Id of the tenant
      */
-    public static void deleteTenantDir(int tenantId) {
+    public static void deleteTenantDirs(int tenantId) {
 
         if (log.isDebugEnabled()) {
             log.debug("Deleting tenant directory of tenant: " + tenantId);
         }
 
-        String tenantDirPath = CarbonUtils.getCarbonTenantsDirPath() + File.separator + tenantId;
-        File tenantDir = new File(tenantDirPath);
-
-        try {
-            FileUtils.deleteDirectory(tenantDir);
-        } catch (IOException e) {
-            log.error("Error in deleting tenant directory: " + tenantDirPath, e);
-        }
+        deleteTenantDir(tenantId);
+        deleteTenantBPELDir(tenantId);
+        deleteTenantHumanTasksDir(tenantId);
     }
 
     public static boolean isTenantAdminCreationOperation() {
@@ -691,5 +685,58 @@ public class TenantMgtUtil {
             }
         }
         return maximumItemsPerPage;
+    }
+
+    /**
+     * Delete the tenant directory of a given tenant.
+     *
+     * @param tenantId Id of the tenant
+     */
+    private static void deleteTenantDir(int tenantId) {
+
+        String tenantDirPath = CarbonUtils.getCarbonTenantsDirPath() + File.separator + tenantId;
+        File tenantDir = new File(tenantDirPath);
+
+        try {
+            FileUtils.deleteDirectory(tenantDir);
+        } catch (IOException e) {
+            log.error("Error in deleting tenant directory: " + tenantDirPath, e);
+        }
+    }
+
+    /**
+     * Delete the BPEL directory of a given tenant.
+     *
+     * @param tenantId Id of the tenant
+     */
+    private static void deleteTenantBPELDir(int tenantId) {
+
+        String tenantBPELDirPath = CarbonUtils.getCarbonHome() +
+                File.separator + "repository" + File.separator + "bpel" + File.separator + tenantId;
+        File tenantDir = new File(tenantBPELDirPath);
+
+        try {
+            FileUtils.deleteDirectory(tenantDir);
+        } catch (IOException e) {
+            log.error("Error in deleting tenant BPEL directory: " + tenantBPELDirPath, e);
+        }
+    }
+
+    /**
+     * Delete the HumanTasks  directory of a given tenant.
+     *
+     * @param tenantId Id of the tenant
+     */
+    private static void deleteTenantHumanTasksDir(int tenantId) {
+
+        String tenantHumanTasksDirPath = CarbonUtils.getCarbonHome() +
+                File.separator + "repository" + File.separator + "humantasks" + File.separator + tenantId;
+        File tenantDir = new File(tenantHumanTasksDirPath);
+
+        try {
+            FileUtils.deleteDirectory(tenantDir);
+        } catch (IOException e) {
+            log.error("Error in deleting tenant HumanTasks directory: " + tenantHumanTasksDirPath, e);
+        }
     }
 }
